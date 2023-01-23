@@ -1,0 +1,21 @@
+(DEM) at 100-foot intervals using QGIS
+
+# Import necessary modules
+import processing
+from qgis.core import QgsVectorLayer, QgsProject
+
+# Set the input DEM and output feature class
+dem = "C:/GIS/Data/dem.tif"
+out_fc = "C:/GIS/Data/contours.shp"
+
+# Set the contour interval
+interval = 100
+
+# Create the contours
+processing.run("qgis:contour", {'INPUT': dem, 'OUTPUT': out_fc, 'INTERVAL': interval})
+
+# Add the contours to the QGIS canvas
+layer = QgsVectorLayer(out_fc, "Contours", "ogr")
+QgsProject.instance().addMapLayer(layer)
+
+print("Contours created successfully!")
