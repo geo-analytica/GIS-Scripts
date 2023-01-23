@@ -1,0 +1,18 @@
+# Import necessary modules
+import arcpy
+from arcpy import env
+
+# Set the workspace
+env.workspace = r"C:\GIS\Data"
+
+# Set the input DEM and output feature class
+dem = "dem.tif"
+out_fc = "contours.shp"
+
+# Set the contour interval
+interval = 100
+
+# Create the contours
+arcpy.Contour_3d(dem, out_fc, interval)
+
+print("Contours created successfully!")
