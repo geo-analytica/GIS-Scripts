@@ -1,0 +1,43 @@
+# Import required modules
+import gdal
+import os
+
+# Set input and output file names
+input_file = '/path/to/input.laz'
+output_file = '/path/to/output.tif'
+
+# Open the input file using GDAL
+ds = gdal.Open(input_file)
+
+# Get the projection and extent of the input file
+proj = ds.GetProjection()
+extent = ds.GetGeoTransform()
+
+# Set the driver for the output file
+driver = gdal.GetDriverByName('GTiff')
+
+# Create the output file
+out_ds = driver.Create(output_file, ds.RasterXSize, ds.RasterYSize, 1, gdal.GDT_Byte)
+
+# Set the projection and extent of the output file
+out_ds.SetProjection(proj)
+out_ds.SetGeoTransform(extent)
+
+# Get the first band of the input file
+in_band = ds.GetRasterBand(1)
+
+# Get the first band of the output file
+out_band = out_ds.GetRasterBand(1)
+
+# Read the data from the input band and write it to the output band
+data = in_band.ReadAsArray()
+out_band.WriteArray(data)
+
+# Close the datasets
+in_band = None
+out_band = None
+out_ds = None
+ds = None
+
+# Open the output file in QGIS
+iface.addRasterLayer(output_file)
