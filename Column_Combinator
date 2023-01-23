@@ -1,0 +1,23 @@
+# Import necessary modules
+from qgis.core import *
+from qgis.utils import iface
+
+# Get the active layer
+layer = iface.activeLayer()
+
+# Start an edit session
+layer.startEditing()
+
+# Get the index of column A and B
+colA = layer.fields().indexFromName("A")
+colB = layer.fields().indexFromName("B")
+
+# Iterate through each feature in the layer
+for feature in layer.getFeatures():
+    # Get the value of column A
+    valueA = feature.attributes()[colA]
+    # Set the value of column B to the value of column A
+    layer.changeAttributeValue(feature.id(), colB, valueA)
+
+# Commit changes
+layer.commitChanges()
