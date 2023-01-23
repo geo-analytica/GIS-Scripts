@@ -1,0 +1,49 @@
+# Import required modules
+import glob
+import os
+
+# Set the input and output folder and file names
+input_folder = '/path/to/input/folder'
+output_folder = '/path/to/output/folder'
+output_file = 'mosaic.tif'
+
+# Create a list of the input files
+input_files = glob.glob(os.path.join(input_folder, '*.tif'))
+
+# Set the projection and extent of the output file to the first input file
+ds = gdal.Open(input_files[0])
+proj = ds.GetProjection()
+extent = ds.GetGeoTransform()
+
+# Set the driver for the output file
+driver = gdal.GetDriverByName('GTiff')
+
+# Create the output file
+out_ds = driver.Create(os.path.join(output_folder, output_file), ds.RasterXSize, ds.RasterYSize, 1, gdal.GDT_Byte)
+
+# Set the projection and extent of the output file
+out_ds.SetProjection(proj)
+out_ds.SetGeoTransform(extent)
+
+# Loop through the input files and mosaic them
+for input_file in input_files:
+    # Open the input file
+    ds = gdal.Open(input_file)
+
+    # Get the first band of the input file
+    in_band = ds.GetRasterBand(1)
+
+    # Read the data from the input band and write it to the output band
+    data = in_band.ReadAsArray()
+    out_ds.GetRasterBand(1).WriteArray(data)
+
+    # Close the input file
+    in_band = None
+    ds = None
+
+# Close the output file
+out_band = None
+out_ds = None
+
+# Open the output file in QGIS
+iface.addRasterLayer(os.path.join(output_folder, output_file))
