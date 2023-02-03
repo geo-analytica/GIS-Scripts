@@ -1,0 +1,42 @@
+This is a python script for QGIS that breaks up a polygon into 1:24000 sized tiles so that they can be used to create topo maps
+Note: Replace "polygon_layer" with the actual name of the polygon layer. The scale of 1:24,000 is represented by the size of the rectangles, which are set to 500 units (meters, feet, etc
+# Load the polygon layer
+layer = QgsProject.instance().mapLayersByName('polygon_layer')[0]
+
+# Create an empty list to store the rectangles
+rectangles = []
+
+# Loop through each polygon feature
+for feature in layer.getFeatures():
+    polygon = feature.geometry().asPolygon()[0]
+    x_min, y_min, x_max, y_max = feature.geometry().boundingBox().toRectF().getCoords()
+
+    # Determine the number of rectangles in the x and y directions
+    x_rects = int((x_max - x_min) / 500)
+    y_rects = int((y_max - y_min) / 500)
+
+    # Loop through each rectangle and add it to the list
+    for i in range(x_rects):
+        for j in range(y_rects):
+            x1 = x_min + (i * 500)
+            y1 = y_min + (j * 500)
+            x2 = x1 + 500
+            y2 = y1 + 500
+            rect = QgsRectangle(x1, y1, x2, y2)
+            rectangles.append(QgsGeometry.fromRect(rect))
+
+# Create a new layer to store the rectangles
+crs = layer.crs()
+rectangle_layer = QgsVectorLayer("Polygon", "rectangles", "memory")
+rectangle_layer.setCrs(crs)
+
+# Add the rectangles to the new layer
+rectangle_layer.startEditing()
+for rectangle in rectangles:
+    feature = QgsFeature()
+    feature.setGeometry(rectangle)
+    rectangle_layer.addFeature(feature)
+rectangle_layer.commitChanges()
+
+# Add the rectangle layer to the map
+QgsProject.instance().addMapLayer(rectangle_layer)
