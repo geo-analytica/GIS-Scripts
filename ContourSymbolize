@@ -1,0 +1,35 @@
+python script for QGIS that creates contours at an interval of 100, selects contours with values of 500, 1000, 1500, 2000, 2500, and 3000, and symbolizes them with a line 1px larger:
+Note: Replace "raster_layer" with the actual name of the raster layer, and update the contour_path variable with the desired location to save the contour shapefile.
+# Load the raster layer
+layer = QgsProject.instance().mapLayersByName('raster_layer')[0]
+
+# Create contours with an interval of 100
+contour_path = 'path/to/contours.shp'
+processing.run("gdal:contour", {'INPUT':layer,'BAND':1,'INTERVAL':100,'NODATA':None,'OPTIONS':'','OUTPUT':contour_path})
+
+# Load the contour layer
+contour_layer = QgsVectorLayer(contour_path, 'contours', 'ogr')
+
+# Create a new field to store selected contours
+contour_layer.startEditing()
+contour_layer.addAttribute(QgsField("selected", QVariant.Int))
+contour_layer.updateFields()
+
+# Select contours with values of 500, 1000, 1500, 2000, 2500, and 3000
+expression = "value IN (500, 1000, 1500, 2000, 2500, 3000)"
+selected_contours = contour_layer.getFeatures(QgsFeatureRequest().setFilterExpression(expression))
+contour_layer.selectByExpression(expression, QgsVectorLayer.SetSelection)
+
+# Symbolize selected contours with a line 1px larger
+symbol = QgsLineSymbol.createSimple({'line_width':'2'})
+renderer = QgsSingleSymbolRenderer(symbol)
+contour_layer.setRenderer(renderer)
+
+# Update the "selected" field for selected contours
+for feature in selected_contours:
+    contour_layer.changeAttributeValue(feature.id(), contour_layer.fields().lookupField("selected"), 1)
+
+contour_layer.commitChanges()
+
+# Add the contour layer to the map
+QgsProject.instance().addMapLayer(contour_layer)
